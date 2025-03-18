@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model users {
+  UserId               String   @id @default(uuid())
+  Username             String   @unique(map: "Users_Username_key") @db.VarChar(50)
+  Password             String   @db.VarChar(500)
+  Department           String   @db.VarChar(500)
+  AccountType          String?  @db.Text
+  REFRESH_TOKEN        String?  @db.Text
+  email                String?  @db.Text
+  name                 String?  @db.Text
+  company_number       String?  @db.Text
+  profile              String?  @db.Text
+  is_master_admin      Boolean?
+  CreatedAt            DateTime @default(now())
+  userConfirmationCode String   @db.VarChar(500)
+}
+
+model claims {
+  claim_auto_id Int      @id @default(autoincrement())
+  claim_id      String   @unique() @db.VarChar(50)
+  policyNo      String   @db.Text
+  CreatedAt     DateTime @default(now())
+}
+
+model claims_details {
+  claims_details_auto_id Int      @id @default(autoincrement())
+  claim_reference_no     String   @unique() @db.VarChar(50)
+  claim_id               String   @db.VarChar(50)
+  claim_type             String   @db.VarChar(550)
+  date_report            DateTime @default(now())
+  date_accident          DateTime @default(now())
+  date_received          DateTime @default(now())
+  status                 String   @db.VarChar(550)
+  amount_claim           Decimal? @default(0.0000) @db.Decimal(19, 4)
+  amount_approved        Decimal? @default(0.0000) @db.Decimal(19, 4)
+  participation          Decimal? @default(0.0000) @db.Decimal(19, 4)
+  net_amount             Decimal? @default(0.0000) @db.Decimal(19, 4)
+  name_ttpd              String   @db.Text
+  remarks                String   @db.Text
+  CreatedAt              DateTime @default(now())
+}
+
+model claims_document {
+  claims_details_auto_id Int      @id @default(autoincrement())
+  claim_id               String   @db.VarChar(550)
+  reference              String   @db.VarChar(550)
+  column_id              Int
+  label                  String   @db.Text
+  filename               String   @db.Text
+  CreatedAt              DateTime @default(now())
+}
+
+model imbursement {
+  imbursement_auto_id Int      @id @default(autoincrement())
+  refNo                  String   @db.VarChar(550)
+  check_from             String   @db.VarChar(550)
+  client_name            String   @db.Text
+  type_claim             String   @db.VarChar(550)
+  amount_claim           Decimal? @default(0.0000) @db.Decimal(19, 4)
+  date_claim             DateTime @default(now())
+  payment                String   @db.VarChar(550)
+  amount_imbursement     Decimal? @default(0.0000) @db.Decimal(19, 4)
+  date_release           DateTime @default(now())
+  payee                  String   @db.Text
+  date_return_upward     DateTime @default(now())
+  CreatedAt              DateTime @default(now())
+}
+
+model system_logs {
+  action       String   @db.Text
+  logs_id      Int      @id @default(autoincrement())
+  username     String   @db.Text
+  dataString   String   @db.Text
+  createdAt    DateTime
+  user_id      String   @db.Text
+  account_type String   @db.Text
+  module       String   @db.Text
+}
