@@ -1,0 +1,13 @@
+DELETE FROM new_upward_insurance_ucsmi.collection where ORNo between '000407' and '000464';
+
+DELETE  FROM new_upward_insurance_ucsmi.journal where  Source_Type = 'OR' and Source_No between '000407' and '000464';
+
+
+// collection
+
+SET @new_or = 406; 
+
+UPDATE new_upward_insurance_ucsmi.collection
+SET ORNo = LPAD(@new_or := @new_or + 1, 6, '0')
+WHERE ORNo BETWEEN '000465' AND '000599'
+ORDER BY ORNo ASC;

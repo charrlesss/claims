@@ -33,6 +33,11 @@ model claims {
   claim_auto_id Int      @id @default(autoincrement())
   claim_id      String   @unique() @db.VarChar(50)
   policyNo      String   @db.Text
+  policyType    String   @db.Text
+  assurename    String   @db.Text
+  idno          String   @db.Text
+  department    String   @db.Text
+  account       String   @db.Text
   CreatedAt     DateTime @default(now())
 }
 
@@ -40,17 +45,20 @@ model claims_details {
   claims_details_auto_id Int      @id @default(autoincrement())
   claim_reference_no     String   @unique() @db.VarChar(50)
   claim_id               String   @db.VarChar(50)
+  document_id            String   @db.VarChar(50)
   claim_type             String   @db.VarChar(550)
   date_report            DateTime @default(now())
   date_accident          DateTime @default(now())
   date_received          DateTime @default(now())
   status                 String   @db.VarChar(550)
+  claimStatus            String   @db.VarChar(550)
   amount_claim           Decimal? @default(0.0000) @db.Decimal(19, 4)
   amount_approved        Decimal? @default(0.0000) @db.Decimal(19, 4)
   participation          Decimal? @default(0.0000) @db.Decimal(19, 4)
   net_amount             Decimal? @default(0.0000) @db.Decimal(19, 4)
   name_ttpd              String   @db.Text
   remarks                String   @db.Text
+  documents              Json
   CreatedAt              DateTime @default(now())
 }
 
@@ -58,26 +66,27 @@ model claims_document {
   claims_details_auto_id Int      @id @default(autoincrement())
   claim_id               String   @db.VarChar(550)
   reference              String   @db.VarChar(550)
-  column_id              Int
+  document_id            Int
   label                  String   @db.Text
   filename               String   @db.Text
+  column_id              String   @db.Text
   CreatedAt              DateTime @default(now())
 }
 
 model imbursement {
   imbursement_auto_id Int      @id @default(autoincrement())
-  refNo                  String   @db.VarChar(550)
-  check_from             String   @db.VarChar(550)
-  client_name            String   @db.Text
-  type_claim             String   @db.VarChar(550)
-  amount_claim           Decimal? @default(0.0000) @db.Decimal(19, 4)
-  date_claim             DateTime @default(now())
-  payment                String   @db.VarChar(550)
-  amount_imbursement     Decimal? @default(0.0000) @db.Decimal(19, 4)
-  date_release           DateTime @default(now())
-  payee                  String   @db.Text
-  date_return_upward     DateTime @default(now())
-  CreatedAt              DateTime @default(now())
+  refNo               String   @db.VarChar(550)
+  check_from          String   @db.VarChar(550)
+  client_name         String   @db.Text
+  type_claim          String   @db.VarChar(550)
+  amount_claim        Decimal? @default(0.0000) @db.Decimal(19, 4)
+  date_claim          DateTime @default(now())
+  payment             String   @db.VarChar(550)
+  amount_imbursement  Decimal? @default(0.0000) @db.Decimal(19, 4)
+  date_release        DateTime @default(now())
+  payee               String   @db.Text
+  date_return_upward  DateTime @default(now())
+  CreatedAt           DateTime @default(now())
 }
 
 model system_logs {
