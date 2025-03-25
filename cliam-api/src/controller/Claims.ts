@@ -1015,7 +1015,155 @@ Claims.post(
   upload.array("files"),
   async (req, res): Promise<any> => {
     try {
+      const policyDetails = JSON.parse(req.body.policyDetails);
+      console.log(req.files);
+
+      // const claimId = req.body.claimId;
+      // const policyDetails = JSON.parse(req.body.policyDetails);
+      // const __metadata = Array.isArray(req.body.metadata)
+      //   ? req.body.metadata
+      //   : [req.body.metadata];
+
+      // const filesArray = JSON.parse(req.body.filesArray);
+      // const uploadedFiles = req.files as Express.Multer.File[];
+      // await prisma.claims.create({
+      //   data: {
+      //     claim_id: claimId,
+      //     policyNo: policyDetails.data[0].PolicyNo,
+      //     department: policyDetails.data[0].Department,
+      //     account: policyDetails.data[0].Account,
+      //     assurename: policyDetails.data[0].Name,
+      //     idno: policyDetails.data[0].IDNo,
+      //     policyType: policyDetails.data[0].PolicyType,
+      //   },
+      // });
+
+      // const mainDir = path.join(uploadDir, claimId);
+      // if (fs.existsSync(mainDir)) {
+      //   fs.rmSync(mainDir, { recursive: true, force: true });
+      // }
+
+      // for (let index = 0; index < filesArray.length; index++) {
+      //   const metadata = JSON.parse(__metadata[index]);
+      //   const group = filesArray[index];
+      //   const groupByRow: any = [];
+      //   const detailsJsonByRow: any = [];
+
+      //   group.forEach((items: any) => {
+      //     const groupFiles: any = [];
+      //     const groupFilename: any = [];
+
+      //     uploadedFiles.forEach((file) => {
+      //       const [reference, document_id, column_id] = file.originalname
+      //         .split("-")
+      //         .slice(-3);
+
+      //       if (
+      //         items.reference === reference &&
+      //         items.document_id === document_id &&
+      //         items.id.toString() === column_id
+      //       ) {
+      //         groupFiles.push(file);
+      //         groupFilename.push(file.filename);
+      //       }
+      //     });
+      //     detailsJsonByRow.push({
+      //       id: items.id,
+      //       label: items.label,
+      //       files: groupFilename,
+      //       document_id: items.document_id,
+      //       required: items.required,
+      //     });
+      //     groupByRow.push(groupFiles);
+      //   });
+
+      //   const filesToSave = groupByRow.flat(Infinity);
+      //   const claimDir = path.join(
+      //     uploadDir,
+      //     claimId,
+      //     metadata.reference,
+      //     metadata.documentId
+      //   );
+      //   if (!fs.existsSync(claimDir)) {
+      //     fs.mkdirSync(claimDir, { recursive: true });
+      //   }
+
+      //   filesToSave.forEach((file: Express.Multer.File) => {
+      //     const sourceImagePath = path.join(uploadDir, file.filename);
+      //     const targetImagePath = path.join(claimDir, file.filename);
+      //     fs.copyFile(sourceImagePath, targetImagePath, (err) => {
+      //       if (err) {
+      //         console.error("Error copying file:", err);
+      //       } else {
+      //         console.log("Image copied successfully to:", targetImagePath);
+      //         fs.unlink(sourceImagePath, (unlinkErr) => {
+      //           if (unlinkErr) {
+      //             console.error("Error deleting source file:", unlinkErr);
+      //           } else {
+      //             console.log("Source file deleted:", sourceImagePath);
+      //           }
+      //         });
+      //       }
+      //     });
+      //   });
+
+      //   await prisma.claims_details.create({
+      //     data: {
+      //       claim_id: claimId,
+      //       claim_reference_no: metadata.reference,
+      //       document_id: metadata.documentId,
+      //       claim_type: metadata.claim_type,
+      //       date_report: new Date(metadata.date_report_not_formated),
+      //       date_accident: new Date(metadata.date_accident_not_formated),
+      //       date_received:
+      //         metadata.date_receive_not_formated !== ""
+      //           ? new Date(metadata.date_receive_not_formated)
+      //           : undefined,
+      //       status: metadata.status,
+      //       claimStatus: metadata.claimStatus,
+      //       amount_claim: metadata.amount_claim.replace(/,/g, ""),
+      //       amount_approved: metadata.amount_approved.replace(/,/g, ""),
+      //       participation: metadata.amount_participation.replace(/,/g, ""),
+      //       net_amount: metadata.amount_net.replace(/,/g, ""),
+      //       name_ttpd: metadata.name_ttpd.replace(/,/g, ""),
+      //       remarks: metadata.remarks,
+      //       documents: JSON.stringify(detailsJsonByRow),
+      //     },
+      //   });
+      // }
+      res.send({
+        data: [],
+        message: "Successfully Save Claim.",
+        success: true,
+      });
+    } catch (error: any) {
+      console.log(error);
+      res.send({
+        data: [],
+        message: `We're experiencing a server issue. Please try again in a few minutes. If the issue continues, report it to IT with the details of what you were doing at the time.`,
+        success: false,
+      });
+    }
+  }
+);
+Claims.post(
+  "/update-claim",
+  upload.array("files"),
+  async (req, res): Promise<any> => {
+    try {
       const claimId = req.body.claimId;
+
+      if (!(await saveUserLogsCode(req, "update", claimId, "Claim"))) {
+        return res.send({ message: "Invalid User Code", success: false });
+      }
+
+      await prisma.$queryRawUnsafe(
+        `DELETE FROM claims.claims where claim_id = '${claimId}'`
+      );
+      await prisma.$queryRawUnsafe(
+        `DELETE FROM claims.claims_details where claim_id = '${claimId}'`
+      );
+
       const policyDetails = JSON.parse(req.body.policyDetails);
       const __metadata = Array.isArray(req.body.metadata)
         ? req.body.metadata
@@ -1034,7 +1182,7 @@ Claims.post(
           policyType: policyDetails.data[0].PolicyType,
         },
       });
-
+      const getAllFileName = [];
       for (let index = 0; index < filesArray.length; index++) {
         const metadata = JSON.parse(__metadata[index]);
         const group = filesArray[index];
@@ -1068,8 +1216,9 @@ Claims.post(
           });
           groupByRow.push(groupFiles);
         });
-
         const filesToSave = groupByRow.flat(Infinity);
+        console.log(filesToSave)
+        getAllFileName.push(filesToSave);
         const claimDir = path.join(
           uploadDir,
           claimId,
@@ -1079,10 +1228,28 @@ Claims.post(
         if (!fs.existsSync(claimDir)) {
           fs.mkdirSync(claimDir, { recursive: true });
         }
-
         filesToSave.forEach((file: Express.Multer.File) => {
           const sourceImagePath = path.join(uploadDir, file.filename);
           const targetImagePath = path.join(claimDir, file.filename);
+          // Check if the destination file exists
+          fs.access(targetImagePath, fs.constants.F_OK, (err) => {
+            if (!err) {
+              // File exists, delete it first
+              fs.unlink(targetImagePath, (unlinkErr) => {
+                if (unlinkErr) {
+                  console.error("Error deleting existing file:", unlinkErr);
+                  return;
+                }
+                console.log("Existing file deleted:", targetImagePath);
+                copyFile(sourceImagePath, targetImagePath); // Proceed with copying
+              });
+            } else {
+              // File does not exist, proceed with copying
+              copyFile(sourceImagePath, targetImagePath);
+            }
+          });
+        });
+        function copyFile(sourceImagePath: string, targetImagePath: string) {
           fs.copyFile(sourceImagePath, targetImagePath, (err) => {
             if (err) {
               console.error("Error copying file:", err);
@@ -1097,8 +1264,7 @@ Claims.post(
               });
             }
           });
-        });
-
+        }
         await prisma.claims_details.create({
           data: {
             claim_id: claimId,
@@ -1125,7 +1291,7 @@ Claims.post(
       }
       res.send({
         data: [],
-        message: "Successfully Generate Claim ID.",
+        message: "Successfully Update Claim.",
         success: true,
       });
     } catch (error: any) {
@@ -1216,80 +1382,5 @@ async function generateUniqueClaimID() {
 
   return `${uniqueID}`;
 }
-
-// const isUpdate = req.body.isUpdate === "true";
-// const header = JSON.parse(req.body.header);
-// const claimId = header.claimId;
-
-// if (
-//   isUpdate &&
-//   !(await saveUserLogsCode(req, "update", claimId, "Claims"))
-// ) {
-//   return res.send({ message: "Invalid User Code", success: false });
-// }
-
-// const claimDir = path.join(uploadDir, claimId);
-
-// const details = JSON.parse(req.body.details);
-// const metadata = JSON.parse(req.body.metadata);
-
-// if (isUpdate) {
-//   await prisma.$queryRawUnsafe(
-//     "delete FROM claims.claims where claim_id = ? ",
-//     claimId
-//   );
-//   await prisma.$queryRawUnsafe(
-//     "delete FROM claims.claims_details where claim_id = ? ",
-//     claimId
-//   );
-//   await prisma.$queryRawUnsafe(
-//     "delete FROM claims.claims_document where claim_id = ? ",
-//     claimId
-//   );
-//   if (fs.existsSync(claimDir)) {
-//     await fs.rm(claimDir, { recursive: true });
-//   }
-// }
-
-// if (!fs.existsSync(claimDir)) {
-//   fs.mkdirSync(claimDir, { recursive: true });
-// }
-// const files = req.files as Express.Multer.File[];
-// if (files.length > 0) {
-//   for (let i = 0; i < files.length; i++) {
-//     await saveFile(files[i], metadata[i]);
-//   }
-// }
-
-// await prisma.claims.create({
-//   data: {
-//     claim_id: header.claimId,
-//     policyNo: header.policyId,
-//   },
-// });
-// for (const itm of details) {
-//   await prisma.claims_details.create({
-//     data: {
-//       claim_id: header.claimId,
-//       claim_reference_no: itm[0],
-//       claim_type: itm[1],
-//       date_report: new Date(itm[12]),
-//       date_accident: new Date(itm[13]),
-//       date_received:
-//         itm[14] && itm[14] !== "" ? new Date(itm[14]) : undefined,
-//       status: itm[4],
-//       amount_claim: parseFloat(itm[6].replace(/,/g, "")),
-//       amount_approved: parseFloat(itm[7].replace(/,/g, "")),
-//       participation: parseFloat(itm[8].replace(/,/g, "")),
-//       net_amount: parseFloat(itm[9].replace(/,/g, "")),
-//       name_ttpd: itm[10],
-//       remarks: itm[11],
-//     },
-//   });
-// }
-
-// if (!isUpdate) {
-//   await saveUserLogs(req, claimId, "add", "Claims");
-// }
 
 export default Claims;
